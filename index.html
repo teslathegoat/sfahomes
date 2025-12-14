@@ -1,0 +1,2581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BayArea Homes - San Francisco Real Estate</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --secondary-color: #4285f4;
+            --accent-color: #fbbc05;
+            --dark-color: #202124;
+            --light-color: #f8f9fa;
+            --text-color: #5f6368;
+            --border-color: #dadce0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .navbar {
+            padding: 1rem 0;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-color) !important;
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            color: var(--dark-color) !important;
+            margin: 0 0.5rem;
+            transition: color 0.3s;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+        }
+        
+        .btn-primary-custom {
+            background-color: var(--primary-color);
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .btn-primary-custom:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://picsum.photos/seed/sf-skyline/1920/800.jpg');
+            background-size: cover;
+            background-position: center;
+            height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            padding: 0 20px;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Search Section */
+        .search-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-top: -100px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .search-tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .search-tab {
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .search-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        
+        .search-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .form-control {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.75rem;
+            width: 100%;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+        }
+        
+        .search-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .search-btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Section Styles */
+        .section {
+            padding: 5rem 0;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-color);
+            margin-bottom: 3rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Property Cards */
+        .property-card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+        }
+        
+        .property-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .property-image {
+            height: 220px;
+            width: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        
+        .property-card:hover .property-image {
+            transform: scale(1.05);
+        }
+        
+        .property-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            z-index: 10;
+        }
+        
+        .property-favorite {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: white;
+            color: var(--text-color);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+        
+        .property-favorite:hover {
+            color: #e53935;
+            transform: scale(1.1);
+        }
+        
+        .property-favorite.active {
+            color: #e53935;
+        }
+        
+        .property-body {
+            padding: 1.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .property-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .property-address {
+            color: var(--text-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .property-address i {
+            margin-right: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .property-features {
+            display: flex;
+            margin-bottom: 1rem;
+            gap: 1rem;
+        }
+        
+        .property-feature {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            font-size: 0.875rem;
+        }
+        
+        .property-feature i {
+            margin-right: 0.25rem;
+            color: var(--primary-color);
+        }
+        
+        .property-description {
+            color: var(--text-color);
+            margin-bottom: 1rem;
+            flex-grow: 1;
+        }
+        
+        .property-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .property-agent {
+            display: flex;
+            align-items: center;
+        }
+        
+        .agent-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            object-fit: cover;
+        }
+        
+        .agent-name {
+            font-weight: 500;
+            color: var(--dark-color);
+            font-size: 0.875rem;
+        }
+        
+        .property-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .property-action {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--light-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .property-action:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        /* Filter Section */
+        .filter-section {
+            background-color: var(--light-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        
+        .filter-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+        
+        .filter-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .filter-group-title {
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+            color: var(--dark-color);
+        }
+        
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .filter-option {
+            padding: 0.5rem 1rem;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.875rem;
+        }
+        
+        .filter-option:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .filter-option.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .price-range {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .price-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        
+        .apply-filters-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        
+        .apply-filters-btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        /* Map Section */
+        .map-container {
+            height: 500px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Testimonials */
+        .testimonial-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s;
+        }
+        
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .testimonial-content {
+            font-style: italic;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+        
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+        }
+        
+        .author-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 1rem;
+            object-fit: cover;
+        }
+        
+        .author-info {
+            flex-grow: 1;
+        }
+        
+        .author-name {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .author-property {
+            color: var(--text-color);
+            font-size: 0.875rem;
+        }
+        
+        .testimonial-rating {
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+        
+        /* Agent Section */
+        .agent-card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .agent-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .agent-image {
+            height: 250px;
+            width: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        
+        .agent-card:hover .agent-image {
+            transform: scale(1.05);
+        }
+        
+        .agent-body {
+            padding: 1.5rem;
+        }
+        
+        .agent-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.25rem;
+        }
+        
+        .agent-title {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .agent-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .agent-stat {
+            text-align: center;
+        }
+        
+        .agent-stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--dark-color);
+        }
+        
+        .agent-stat-label {
+            font-size: 0.875rem;
+            color: var(--text-color);
+        }
+        
+        .agent-bio {
+            color: var(--text-color);
+            margin-bottom: 1.5rem;
+        }
+        
+        .agent-contact {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .agent-contact-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+        
+        .agent-contact-btn.primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .agent-contact-btn.primary:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        .agent-contact-btn.secondary {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            border: 1px solid var(--border-color);
+        }
+        
+        .agent-contact-btn.secondary:hover {
+            background-color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* Property Detail Modal */
+        .modal-content {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+        
+        .modal-title {
+            font-weight: 600;
+        }
+        
+        .btn-close {
+            filter: invert(1);
+        }
+        
+        .property-detail-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+        }
+        
+        .property-detail-info {
+            padding: 1.5rem;
+        }
+        
+        .property-detail-price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .property-detail-address {
+            font-size: 1.125rem;
+            color: var(--text-color);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .property-detail-address i {
+            margin-right: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .property-detail-features {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .property-detail-feature {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+        }
+        
+        .property-detail-feature i {
+            margin-right: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .property-detail-description {
+            margin-bottom: 1.5rem;
+        }
+        
+        .property-detail-amenities {
+            margin-bottom: 1.5rem;
+        }
+        
+        .amenities-title {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 1rem;
+        }
+        
+        .amenities-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        
+        .amenity-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background-color: var(--light-color);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            transition: all 0.3s;
+        }
+        
+        .amenity-item:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .amenity-item i {
+            margin-right: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .amenity-item:hover i {
+            color: white;
+        }
+        
+        .property-detail-agent {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background-color: var(--light-color);
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .property-detail-agent-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 1rem;
+            object-fit: cover;
+        }
+        
+        .property-detail-agent-info {
+            flex-grow: 1;
+        }
+        
+        .property-detail-agent-name {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .property-detail-agent-title {
+            color: var(--text-color);
+            font-size: 0.875rem;
+        }
+        
+        .property-detail-agent-contact {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .property-detail-agent-contact-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+        
+        .property-detail-agent-contact-btn.primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .property-detail-agent-contact-btn.primary:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        .property-detail-agent-contact-btn.secondary {
+            background-color: white;
+            color: var(--dark-color);
+            border: 1px solid var(--border-color);
+        }
+        
+        .property-detail-agent-contact-btn.secondary:hover {
+            background-color: var(--light-color);
+            transform: translateY(-2px);
+        }
+        
+        /* Virtual Tour Section */
+        .virtual-tour-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .virtual-tour-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .virtual-tour-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .virtual-tour-container:hover .virtual-tour-overlay {
+            opacity: 1;
+        }
+        
+        .play-button {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .play-button:hover {
+            background-color: white;
+            transform: scale(1.1);
+        }
+        
+        .play-button i {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-left: 5px;
+        }
+        
+        .virtual-tour-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .virtual-tour-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .virtual-tour-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        /* Schedule Viewing Modal */
+        .schedule-form {
+            padding: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control-custom {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control-custom:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+        }
+        
+        .time-slots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .time-slot {
+            padding: 0.5rem 1rem;
+            background-color: var(--light-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .time-slot:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .time-slot.selected {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+        
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .footer-description {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 1.5rem;
+        }
+        
+        .footer-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: white;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .social-link {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: all 0.3s;
+        }
+        
+        .social-link:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.875rem;
+        }
+        
+        /* Loading Spinner */
+        .spinner-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--light-color);
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Notification Toast */
+        .notification-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+            max-width: 350px;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .notification-icon.success {
+            background-color: #34a853;
+            color: white;
+        }
+        
+        .notification-icon.info {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .notification-content {
+            flex-grow: 1;
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.25rem;
+        }
+        
+        .notification-message {
+            color: var(--text-color);
+            font-size: 0.875rem;
+        }
+        
+        .notification-close {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 1.25rem;
+        }
+        
+        /* Mortgage Calculator Result */
+        .mortgage-result {
+            background-color: var(--light-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .mortgage-result.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .mortgage-result-title {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .mortgage-result-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .mortgage-result-details {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-color);
+        }
+        
+        /* Neighborhood Info Modal */
+        .neighborhood-info {
+            padding: 1rem;
+        }
+        
+        .neighborhood-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .neighborhood-stat {
+            text-align: center;
+            padding: 1rem;
+            background-color: var(--light-color);
+            border-radius: 8px;
+        }
+        
+        .neighborhood-stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .neighborhood-stat-label {
+            font-size: 0.875rem;
+            color: var(--text-color);
+            margin-top: 0.25rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .property-detail-features {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero {
+                height: 500px;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .search-form {
+                flex-direction: column;
+            }
+            
+            .form-group {
+                width: 100%;
+            }
+            
+            .filter-section {
+                margin-bottom: 1rem;
+            }
+            
+            .property-features {
+                flex-wrap: wrap;
+            }
+            
+            .agent-stats {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+            
+            .neighborhood-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <a class="navbar-brand" href="#"><i class="fas fa-home"></i> BayArea Homes</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#buy">Buy</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#rent">Rent</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#neighborhoods">Neighborhoods</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#agents">Agents</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#testimonials">Testimonials</a>
+                        </li>
+                        <li class="nav-item ms-2">
+                            <button class="btn btn-primary-custom" onclick="showSignInModal()">Sign In</button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Find Your Dream Home in San Francisco</h1>
+            <p>Discover the perfect property to buy or rent in the vibrant neighborhoods of San Francisco</p>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <section class="container search-section">
+        <div class="search-tabs">
+            <div class="search-tab active" data-tab="buy" onclick="switchSearchTab('buy')">Buy</div>
+            <div class="search-tab" data-tab="rent" onclick="switchSearchTab('rent')">Rent</div>
+        </div>
+        <form class="search-form" id="searchForm" onsubmit="performSearch(event)">
+            <div class="form-group">
+                <input type="text" class="form-control" placeholder="Location, Neighborhood, ZIP" id="locationInput">
+            </div>
+            <div class="form-group">
+                <select class="form-control" id="propertyTypeSelect">
+                    <option>Property Type</option>
+                    <option>House</option>
+                    <option>Condo</option>
+                    <option>Townhouse</option>
+                    <option>Apartment</option>
+                    <option>Loft</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <select class="form-control" id="minPriceSelect">
+                    <option>Min Price</option>
+                    <option>$500,000</option>
+                    <option>$750,000</option>
+                    <option>$1,000,000</option>
+                    <option>$1,500,000</option>
+                    <option>$2,000,000</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <select class="form-control" id="maxPriceSelect">
+                    <option>Max Price</option>
+                    <option>$1,000,000</option>
+                    <option>$1,500,000</option>
+                    <option>$2,000,000</option>
+                    <option>$3,000,000</option>
+                    <option>$5,000,000</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <select class="form-control" id="bedroomsSelect">
+                    <option>Bedrooms</option>
+                    <option>1+</option>
+                    <option>2+</option>
+                    <option>3+</option>
+                    <option>4+</option>
+                    <option>5+</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <select class="form-control" id="bathroomsSelect">
+                    <option>Bathrooms</option>
+                    <option>1+</option>
+                    <option>2+</option>
+                    <option>3+</option>
+                    <option>4+</option>
+                </select>
+            </div>
+            <button type="submit" class="search-btn">Search</button>
+        </form>
+    </section>
+
+    <!-- Featured Properties -->
+    <section class="section" id="featured">
+        <div class="container">
+            <h2 class="section-title">Featured Properties</h2>
+            <p class="section-subtitle">Hand-picked properties in San Francisco's most desirable neighborhoods</p>
+            <div class="row" id="featuredProperties">
+                <!-- Properties will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Properties with Filters -->
+    <section class="section bg-light" id="buy">
+        <div class="container">
+            <h2 class="section-title">Properties for Sale</h2>
+            <p class="section-subtitle">Browse our extensive collection of homes for sale in San Francisco</p>
+            <div class="row">
+                <div class="col-lg-3">
+                    <div class="filter-section">
+                        <h3 class="filter-title">Filters</h3>
+                        
+                        <div class="filter-group">
+                            <h4 class="filter-group-title">Neighborhood</h4>
+                            <div class="filter-options">
+                                <div class="filter-option active" onclick="selectFilterOption(this, 'neighborhood', 'All')">All</div>
+                                <div class="filter-option" onclick="selectFilterOption(this, 'neighborhood', 'Mission District')">Mission District</div>
+                                <div class="filter-option" onclick="selectFilterOption(this, 'neighborhood', 'Pacific Heights')">Pacific Heights</div>
+                                <div class="filter-option" onclick="selectFilterOption(this, 'neighborhood', 'Noe Valley')">Noe Valley</div>
+                                <div class="filter-option" onclick="selectFilterOption(this, 'neighborhood', 'SOMA')">SOMA</div>
+                                <div class="filter-option" onclick="selectFilterOption(this, 'neighborhood', 'Marina')">Marina</div>
+                                <div class="filter-option" onclick="selectFilterOption(this, 'neighborhood', 'Castro')">Castro</div>
+                                <div class="filter-option" onclick="selectFilterOption(this, 'neighborhood', 'Hayes Valley')">Hayes Valley</div>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <h4 class="filter-group-title">Property Type</h4>
+                            <div class="filter-options">
+                                <div class="filter-option active" onclick="selectFilterOption(this, 'propertyType', 'All')">All</div>
+                                <div class="filter-option" onclick="selectFilterOption(this, 'propertyType', 'House')">House</div>
+                                <div class="filter-option" onclick="selectFilterOption(this, 'propertyType', 'Condo')">Condo</div>
+                                <div class="filter-option" onclick="selectFilterOption(this, 'propertyType', 'Townhouse')">Townhouse</div>
+                                <div class="filter-option" onclick="selectFilterOption(this, 'propertyType', 'Apartment')">Apartment</div>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <h4 class="filter-group-title">Price Range</h4>
+                            <div class="price-range">
+                                <input type="number" class="price-input" placeholder="Min" value="500000" id="filterMinPrice">
+                                <span>-</span>
+                                <input type="number" class="price-input" placeholder="Max" value="3000000" id="filterMaxPrice">
+                            </div>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <h4 class="filter-group-title">Bedrooms</h4>
+                            <div class="filter-options">
+                                <div class="filter-option" onclick="selectFilterOption(this, 'bedrooms', '1')">1</div>
+                                <div class="filter-option" onclick="selectFilterOption(this, 'bedrooms', '2')">2</div>
+                                <div class="filter-option" onclick="selectFilterOption(this, 'bedrooms', '3')">3</div>
+                                <div class="filter-option" onclick="selectFilterOption(this, 'bedrooms', '4')">4</div>
+                                <div class="filter-option" onclick="selectFilterOption(this, 'bedrooms', '5+')">5+</div>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <h4 class="filter-group-title">Bathrooms</h4>
+                            <div class="filter-options">
+                                <div class="filter-option" onclick="selectFilterOption(this, 'bathrooms', '1')">1</div>
+                                <div class="filter-option" onclick="selectFilterOption(this, 'bathrooms', '2')">2</div>
+                                <div class="filter-option" onclick="selectFilterOption(this, 'bathrooms', '3')">3</div>
+                                <div class="filter-option" onclick="selectFilterOption(this, 'bathrooms', '4+')">4+</div>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <h4 class="filter-group-title">Amenities</h4>
+                            <div class="filter-options">
+                                <div class="filter-option" onclick="toggleAmenity(this)">Parking</div>
+                                <div class="filter-option" onclick="toggleAmenity(this)">Gym</div>
+                                <div class="filter-option" onclick="toggleAmenity(this)">Pool</div>
+                                <div class="filter-option" onclick="toggleAmenity(this)">Pet Friendly</div>
+                                <div class="filter-option" onclick="toggleAmenity(this)">In-unit Laundry</div>
+                            </div>
+                        </div>
+                        
+                        <button class="apply-filters-btn" onclick="applyFilters()">Apply Filters</button>
+                    </div>
+                </div>
+                
+                <div class="col-lg-9">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <p class="mb-0">Showing <span id="propertyCount">24</span> properties</p>
+                        <select class="form-control" style="width: auto;" onchange="sortProperties(this.value)">
+                            <option>Sort by: Newest</option>
+                            <option>Price: Low to High</option>
+                            <option>Price: High to Low</option>
+                            <option>Bedrooms</option>
+                            <option>Square Feet</option>
+                        </select>
+                    </div>
+                    
+                    <div class="row" id="propertiesList">
+                        <!-- Properties will be loaded here -->
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button class="btn btn-primary-custom" id="loadMoreBtn" onclick="loadMoreProperties()">Load More</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section class="section" id="neighborhoods">
+        <div class="container">
+            <h2 class="section-title">Explore San Francisco Neighborhoods</h2>
+            <p class="section-subtitle">Discover the unique character and charm of each San Francisco neighborhood</p>
+            <div class="map-container" id="map"></div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="section" id="testimonials">
+        <div class="container">
+            <h2 class="section-title">What Our Clients Say</h2>
+            <p class="section-subtitle">Read testimonials from happy homebuyers and sellers</p>
+            <div class="row" id="testimonialsList">
+                <!-- Testimonials will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Agents -->
+    <section class="section bg-light" id="agents">
+        <div class="container">
+            <h2 class="section-title">Meet Our Agents</h2>
+            <p class="section-subtitle">Our experienced agents are here to help you find your perfect home</p>
+            <div class="row" id="agentsList">
+                <!-- Agents will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="footer-logo">BayArea Homes</div>
+                    <p class="footer-description">Your trusted partner for finding the perfect home in San Francisco. With years of experience and deep local knowledge, we're here to make your real estate journey seamless.</p>
+                    <div class="social-links">
+                        <a href="#" class="social-link" onclick="openSocialLink('facebook')"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-link" onclick="openSocialLink('twitter')"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link" onclick="openSocialLink('instagram')"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link" onclick="openSocialLink('linkedin')"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-2 mb-4">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#buy" onclick="scrollToSection('buy')">Buy Property</a></li>
+                        <li><a href="#rent" onclick="scrollToSection('rent')">Rent Property</a></li>
+                        <li><a href="#agents" onclick="scrollToSection('agents')">Our Agents</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-4">
+                    <h3 class="footer-title">Neighborhoods</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" onclick="showNeighborhoodInfo('Mission District')">Mission District</a></li>
+                        <li><a href="#" onclick="showNeighborhoodInfo('Pacific Heights')">Pacific Heights</a></li>
+                        <li><a href="#" onclick="showNeighborhoodInfo('Noe Valley')">Noe Valley</a></li>
+                        <li><a href="#" onclick="showNeighborhoodInfo('SOMA')">SOMA</a></li>
+                        <li><a href="#" onclick="showNeighborhoodInfo('Marina')">Marina</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-4">
+                    <h3 class="footer-title">Resources</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" onclick="showResource('buying-guide')">Buying Guide</a></li>
+                        <li><a href="#" onclick="showResource('selling-guide')">Selling Guide</a></li>
+                        <li><a href="#" onclick="showResource('mortgage-calculator')">Mortgage Calculator</a></li>
+                        <li><a href="#" onclick="showResource('blog')">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-4">
+                    <h3 class="footer-title">Contact</h3>
+                    <ul class="footer-links">
+                        <li><a href="tel:4155551234" onclick="makePhoneCall()">(415) 555-1234</a></li>
+                        <li><a href="mailto:info@bayareahomes.com" onclick="sendEmail()">info@bayareahomes.com</a></li>
+                        <li><a href="#" onclick="showMap()">123 Market Street</a></li>
+                        <li><a href="#" onclick="showMap()">San Francisco, CA 94105</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2023 BayArea Homes. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Property Detail Modal -->
+    <div class="modal fade" id="propertyModal" tabindex="-1" aria-labelledby="propertyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="propertyModalLabel">Property Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="propertyModalBody">
+                    <!-- Property details will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Viewing Modal -->
+    <div class="modal fade" id="scheduleModal" tabindex="-1" aria-labelledby="scheduleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="scheduleModalLabel">Schedule a Viewing</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="schedule-form" onsubmit="submitScheduleForm(event)">
+                        <div class="form-group">
+                            <label class="form-label">Your Name</label>
+                            <input type="text" class="form-control-custom" placeholder="Enter your full name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-control-custom" placeholder="Enter your email" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control-custom" placeholder="Enter your phone number" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Preferred Date</label>
+                            <input type="date" class="form-control-custom" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Preferred Time</label>
+                            <div class="time-slots">
+                                <div class="time-slot" onclick="selectTimeSlot(this)">9:00 AM</div>
+                                <div class="time-slot" onclick="selectTimeSlot(this)">10:00 AM</div>
+                                <div class="time-slot" onclick="selectTimeSlot(this)">11:00 AM</div>
+                                <div class="time-slot" onclick="selectTimeSlot(this)">12:00 PM</div>
+                                <div class="time-slot" onclick="selectTimeSlot(this)">1:00 PM</div>
+                                <div class="time-slot" onclick="selectTimeSlot(this)">2:00 PM</div>
+                                <div class="time-slot" onclick="selectTimeSlot(this)">3:00 PM</div>
+                                <div class="time-slot" onclick="selectTimeSlot(this)">4:00 PM</div>
+                                <div class="time-slot" onclick="selectTimeSlot(this)">5:00 PM</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Additional Notes</label>
+                            <textarea class="form-control-custom" rows="3" placeholder="Any questions or special requests?"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary-custom w-100">Schedule Viewing</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Neighborhood Info Modal -->
+    <div class="modal fade" id="neighborhoodModal" tabindex="-1" aria-labelledby="neighborhoodModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="neighborhoodModalLabel">Neighborhood Information</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="neighborhood-info">
+                        <div class="neighborhood-stats">
+                            <div class="neighborhood-stat">
+                                <div class="neighborhood-stat-value">$1.8M</div>
+                                <div class="neighborhood-stat-label">Median Home Price</div>
+                            </div>
+                            <div class="neighborhood-stat">
+                                <div class="neighborhood-stat-value">4.8</div>
+                                <div class="neighborhood-stat-label">Walk Score</div>
+                            </div>
+                            <div class="neighborhood-stat">
+                                <div class="neighborhood-stat-value">92</div>
+                                <div class="neighborhood-stat-label">Transit Score</div>
+                            </div>
+                            <div class="neighborhood-stat">
+                                <div class="neighborhood-stat-value">85</div>
+                                <div class="neighborhood-stat-label">Bike Score</div>
+                            </div>
+                        </div>
+                        <h5>About This Neighborhood</h5>
+                        <p>This vibrant San Francisco neighborhood offers a perfect blend of urban convenience and community charm. With excellent schools, diverse dining options, and easy access to public transportation, it's an ideal location for families and professionals alike.</p>
+                        <h5>Local Attractions</h5>
+                        <ul>
+                            <li>Beautiful parks and recreational spaces</li>
+                            <li>Top-rated restaurants and cafes</li>
+                            <li>Excellent shopping districts</li>
+                            <li>Cultural centers and museums</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Sample data for properties with real house images
+        const properties = [
+            {
+                id: 1,
+                type: 'sale',
+                title: 'Modern Condo with Bay Views',
+                address: '123 Pacific Ave, San Francisco, CA 94115',
+                price: 1250000,
+                bedrooms: 2,
+                bathrooms: 2,
+                sqft: 1200,
+                image: 'https://picsum.photos/seed/house1/800/600.jpg',
+                neighborhood: 'Pacific Heights',
+                propertyType: 'Condo',
+                description: 'Stunning modern condo with panoramic bay views from every room. This beautifully renovated unit features an open floor plan, high-end appliances, and a private balcony perfect for enjoying the sunset.',
+                amenities: ['In-unit Laundry', 'Gym', 'Parking', 'Pet Friendly', 'Concierge', 'Rooftop Deck'],
+                agent: {
+                    name: 'Sarah Johnson',
+                    title: 'Senior Real Estate Agent',
+                    avatar: 'https://picsum.photos/seed/agent1/200/200.jpg',
+                    phone: '(415) 555-1234',
+                    email: 'sarah@bayareahomes.com'
+                },
+                videoUrl: 'https://picsum.photos/seed/tour1/1280/720.jpg',
+                lat: 37.7929,
+                lng: -122.4327
+            },
+            {
+                id: 2,
+                type: 'sale',
+                title: 'Victorian Home in Noe Valley',
+                address: '456 Church St, San Francisco, CA 94114',
+                price: 2100000,
+                bedrooms: 4,
+                bathrooms: 3,
+                sqft: 2800,
+                image: 'https://picsum.photos/seed/house2/800/600.jpg',
+                neighborhood: 'Noe Valley',
+                propertyType: 'House',
+                description: 'Beautifully preserved Victorian home with modern updates. This spacious family home features original details, a renovated kitchen with top-of-the-line appliances, and a landscaped backyard.',
+                amenities: ['Garage', 'Garden', 'Fireplace', 'Updated Kitchen', 'Hardwood Floors', 'Storage'],
+                agent: {
+                    name: 'Michael Chen',
+                    title: 'Real Estate Specialist',
+                    avatar: 'https://picsum.photos/seed/agent2/200/200.jpg',
+                    phone: '(415) 555-5678',
+                    email: 'michael@bayareahomes.com'
+                },
+                videoUrl: 'https://picsum.photos/seed/tour2/1280/720.jpg',
+                lat: 37.7513,
+                lng: -122.4268
+            },
+            {
+                id: 3,
+                type: 'rent',
+                title: 'Luxury Apartment in SOMA',
+                address: '789 Mission St, San Francisco, CA 94103',
+                price: 5500,
+                bedrooms: 2,
+                bathrooms: 2,
+                sqft: 1500,
+                image: 'https://picsum.photos/seed/house3/800/600.jpg',
+                neighborhood: 'SOMA',
+                propertyType: 'Apartment',
+                description: 'High-end apartment in the heart of SOMA with floor-to-ceiling windows and city views. This modern unit features a gourmet kitchen, spa-like bathrooms, and access to building amenities including a pool and fitness center.',
+                amenities: ['Pool', 'Gym', 'Concierge', 'Rooftop Terrace', 'In-unit Laundry', 'Smart Home'],
+                agent: {
+                    name: 'Emily Rodriguez',
+                    title: 'Rental Specialist',
+                    avatar: 'https://picsum.photos/seed/agent3/200/200.jpg',
+                    phone: '(415) 555-9012',
+                    email: 'emily@bayareahomes.com'
+                },
+                videoUrl: 'https://picsum.photos/seed/tour3/1280/720.jpg',
+                lat: 37.7880,
+                lng: -122.3976
+            },
+            {
+                id: 4,
+                type: 'sale',
+                title: 'Contemporary Townhouse in Marina',
+                address: '321 Lombard St, San Francisco, CA 94123',
+                price: 2850000,
+                bedrooms: 3,
+                bathrooms: 3,
+                sqft: 2200,
+                image: 'https://picsum.photos/seed/house4/800/600.jpg',
+                neighborhood: 'Marina',
+                propertyType: 'Townhouse',
+                description: 'Contemporary townhouse just steps from the Marina Green. This modern home features an open-concept living space, a private rooftop deck with Golden Gate Bridge views, and a two-car garage.',
+                amenities: ['Garage', 'Rooftop Deck', 'Modern Kitchen', 'Fireplace', 'Storage', 'Outdoor Space'],
+                agent: {
+                    name: 'David Park',
+                    title: 'Luxury Real Estate Agent',
+                    avatar: 'https://picsum.photos/seed/agent4/200/200.jpg',
+                    phone: '(415) 555-3456',
+                    email: 'david@bayareahomes.com'
+                },
+                videoUrl: 'https://picsum.photos/seed/tour4/1280/720.jpg',
+                lat: 37.8020,
+                lng: -122.4350
+            },
+            {
+                id: 5,
+                type: 'rent',
+                title: 'Cozy Studio in Castro',
+                address: '555 Market St, San Francisco, CA 94114',
+                price: 2800,
+                bedrooms: 0,
+                bathrooms: 1,
+                sqft: 550,
+                image: 'https://picsum.photos/seed/house5/800/600.jpg',
+                neighborhood: 'Castro',
+                propertyType: 'Studio',
+                description: 'Charming studio apartment in the heart of the Castro. This efficiently designed space features a sleeping alcove, a full kitchen, and large windows that fill the space with natural light.',
+                amenities: ['Laundry in Building', 'Pet Friendly', 'Hardwood Floors', 'High Ceilings', 'Close to Transit'],
+                agent: {
+                    name: 'Jessica Taylor',
+                    title: 'Rental Agent',
+                    avatar: 'https://picsum.photos/seed/agent5/200/200.jpg',
+                    phone: '(415) 555-7890',
+                    email: 'jessica@bayareahomes.com'
+                },
+                videoUrl: 'https://picsum.photos/seed/tour5/1280/720.jpg',
+                lat: 37.7614,
+                lng: -122.4349
+            },
+            {
+                id: 6,
+                type: 'sale',
+                title: 'Historic Home in Pacific Heights',
+                address: '2000 Broadway, San Francisco, CA 94115',
+                price: 4500000,
+                bedrooms: 5,
+                bathrooms: 4,
+                sqft: 4500,
+                image: 'https://picsum.photos/seed/house6/800/600.jpg',
+                neighborhood: 'Pacific Heights',
+                propertyType: 'House',
+                description: 'Magnificent historic home in prestigious Pacific Heights with panoramic views of the Golden Gate Bridge and the Bay. This elegant residence features period details, formal living and dining rooms, a gourmet kitchen, and a beautifully landscaped garden.',
+                amenities: ['Garden', 'Garage', 'Fireplace', 'Wine Cellar', 'Guest House', 'Security System'],
+                agent: {
+                    name: 'Robert Williams',
+                    title: 'Luxury Real Estate Specialist',
+                    avatar: 'https://picsum.photos/seed/agent6/200/200.jpg',
+                    phone: '(415) 555-2345',
+                    email: 'robert@bayareahomes.com'
+                },
+                videoUrl: 'https://picsum.photos/seed/tour6/1280/720.jpg',
+                lat: 37.7929,
+                lng: -122.4370
+            }
+        ];
+
+        // Sample testimonials
+        const testimonials = [
+            {
+                id: 1,
+                content: "Working with BayArea Homes was an absolute pleasure. They found us our dream home in Noe Valley within weeks. Their knowledge of the San Francisco market is unmatched!",
+                author: "Jennifer & Mark Thompson",
+                property: "House in Noe Valley",
+                avatar: "https://picsum.photos/seed/testimonial1/200/200.jpg",
+                rating: 5
+            },
+            {
+                id: 2,
+                content: "As first-time homebuyers, we were nervous about the process. Our agent guided us through every step with patience and expertise. We couldn't be happier with our new condo in SOMA!",
+                author: "Alex Rivera",
+                property: "Condo in SOMA",
+                avatar: "https://picsum.photos/seed/testimonial2/200/200.jpg",
+                rating: 5
+            },
+            {
+                id: 3,
+                content: "BayArea Homes sold our Pacific Heights home above asking price in just 5 days. Their marketing strategy and negotiation skills are truly impressive. Highly recommended!",
+                author: "Susan Chen",
+                property: "House in Pacific Heights",
+                avatar: "https://picsum.photos/seed/testimonial3/200/200.jpg",
+                rating: 5
+            },
+            {
+                id: 4,
+                content: "We found the perfect rental in the Marina through BayArea Homes. The process was smooth and they were always available to answer our questions. Great service!",
+                author: "David & Lisa Johnson",
+                property: "Apartment in Marina",
+                avatar: "https://picsum.photos/seed/testimonial4/200/200.jpg",
+                rating: 4
+            }
+        ];
+
+        // Sample agents
+        const agents = [
+            {
+                id: 1,
+                name: "Sarah Johnson",
+                title: "Senior Real Estate Agent",
+                image: "https://picsum.photos/seed/agent1/400/500.jpg",
+                bio: "With over 15 years of experience in San Francisco real estate, Sarah specializes in luxury properties and has an impressive track record of satisfied clients.",
+                sales: 127,
+                years: 15,
+                specialties: "Luxury Homes, Condos"
+            },
+            {
+                id: 2,
+                name: "Michael Chen",
+                title: "Real Estate Specialist",
+                image: "https://picsum.photos/seed/agent2/400/500.jpg",
+                bio: "Michael brings a unique perspective to real estate with his background in architecture and design. He helps clients see the potential in every property.",
+                sales: 98,
+                years: 10,
+                specialties: "Historic Homes, Renovations"
+            },
+            {
+                id: 3,
+                name: "Emily Rodriguez",
+                title: "Rental Specialist",
+                image: "https://picsum.photos/seed/agent3/400/500.jpg",
+                bio: "Emily has an extensive network of landlords and property managers, making her the go-to agent for rentals in San Francisco's most desirable neighborhoods.",
+                sales: 215,
+                years: 8,
+                specialties: "Apartments, Condos"
+            },
+            {
+                id: 4,
+                name: "David Park",
+                title: "Luxury Real Estate Agent",
+                image: "https://picsum.photos/seed/agent4/400/500.jpg",
+                bio: "David specializes in high-end properties in Pacific Heights, Sea Cliff, and other prestigious San Francisco neighborhoods. His discretion and professionalism are unmatched.",
+                sales: 76,
+                years: 12,
+                specialties: "Luxury Homes, Waterfront Properties"
+            }
+        ];
+
+        // Global variables
+        let currentProperty = null;
+        let favorites = [];
+        let selectedFilters = {
+            neighborhood: 'All',
+            propertyType: 'All',
+            bedrooms: null,
+            bathrooms: null,
+            amenities: []
+        };
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load featured properties
+            loadFeaturedProperties();
+            
+            // Load properties for sale
+            loadProperties('sale');
+            
+            // Load testimonials
+            loadTestimonials();
+            
+            // Load agents
+            loadAgents();
+            
+            // Initialize map
+            initializeMap();
+        });
+
+        // Load featured properties
+        function loadFeaturedProperties() {
+            const container = document.getElementById('featuredProperties');
+            const featuredProperties = properties.slice(0, 3);
+            
+            container.innerHTML = featuredProperties.map(property => createPropertyCard(property)).join('');
+            
+            // Add click event listeners to property cards
+            addPropertyCardListeners();
+        }
+
+        // Load properties
+        function loadProperties(type) {
+            const container = document.getElementById('propertiesList');
+            const filteredProperties = properties.filter(p => p.type === type);
+            
+            container.innerHTML = filteredProperties.map(property => createPropertyCard(property)).join('');
+            
+            // Update property count
+            document.getElementById('propertyCount').textContent = filteredProperties.length;
+            
+            // Add click event listeners to property cards
+            addPropertyCardListeners();
+        }
+
+        // Create property card HTML
+        function createPropertyCard(property) {
+            const isFavorite = favorites.includes(property.id);
+            const badgeText = property.type === 'sale' ? 'For Sale' : 'For Rent';
+            const priceText = property.type === 'sale' 
+                ? `$${property.price.toLocaleString()}` 
+                : `$${property.price.toLocaleString()}/mo`;
+            
+            return `
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="property-card" data-property-id="${property.id}" onclick="showPropertyDetails(${property.id})">
+                        <div class="position-relative overflow-hidden">
+                            <img src="${property.image}" alt="${property.title}" class="property-image">
+                            <div class="property-badge">${badgeText}</div>
+                            <div class="property-favorite ${isFavorite ? 'active' : ''}" onclick="toggleFavorite(event, ${property.id})">
+                                <i class="${isFavorite ? 'fas' : 'far'} fa-heart"></i>
+                            </div>
+                        </div>
+                        <div class="property-body">
+                            <div class="property-price">${priceText}</div>
+                            <div class="property-address">
+                                <i class="fas fa-map-marker-alt"></i>
+                                ${property.address}
+                            </div>
+                            <div class="property-features">
+                                <div class="property-feature">
+                                    <i class="fas fa-bed"></i>
+                                    ${property.bedrooms} Beds
+                                </div>
+                                <div class="property-feature">
+                                    <i class="fas fa-bath"></i>
+                                    ${property.bathrooms} Baths
+                                </div>
+                                <div class="property-feature">
+                                    <i class="fas fa-ruler-combined"></i>
+                                    ${property.sqft} sqft
+                                </div>
+                            </div>
+                            <div class="property-description">${property.description}</div>
+                            <div class="property-footer">
+                                <div class="property-agent">
+                                    <img src="${property.agent.avatar}" alt="${property.agent.name}" class="agent-avatar">
+                                    <div class="agent-name">${property.agent.name}</div>
+                                </div>
+                                <div class="property-actions">
+                                    <div class="property-action" onclick="openScheduleModal(event, ${property.id})" data-bs-toggle="tooltip" title="Schedule Viewing">
+                                        <i class="fas fa-calendar"></i>
+                                    </div>
+                                    <div class="property-action" onclick="playVirtualTour(event, ${property.id})" data-bs-toggle="tooltip" title="Virtual Tour">
+                                        <i class="fas fa-video"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Add event listeners to property cards
+        function addPropertyCardListeners() {
+            document.querySelectorAll('.property-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    if (!e.target.closest('.property-favorite') && !e.target.closest('.property-action')) {
+                        const propertyId = parseInt(this.dataset.propertyId);
+                        showPropertyDetails(propertyId);
+                    }
+                });
+            });
+        }
+
+        // Show property details in modal
+        function showPropertyDetails(propertyId) {
+            const property = properties.find(p => p.id === propertyId);
+            if (!property) return;
+            
+            currentProperty = property;
+            const badgeText = property.type === 'sale' ? 'For Sale' : 'For Rent';
+            const priceText = property.type === 'sale' 
+                ? `$${property.price.toLocaleString()}` 
+                : `$${property.price.toLocaleString()}/mo`;
+            
+            const amenitiesList = property.amenities.map(amenity => 
+                `<div class="amenity-item">
+                    <i class="fas fa-check-circle"></i>
+                    ${amenity}
+                </div>`
+            ).join('');
+            
+            const modalBody = document.getElementById('propertyModalBody');
+            modalBody.innerHTML = `
+                <div class="row">
+                    <div class="col-md-8">
+                        <img src="${property.image}" alt="${property.title}" class="property-detail-image">
+                        
+                        <div class="virtual-tour-container" onclick="playVirtualTour(event, ${property.id})">
+                            <img src="${property.videoUrl}" alt="Virtual Tour" class="virtual-tour-video">
+                            <div class="virtual-tour-overlay">
+                                <div class="play-button">
+                                    <i class="fas fa-play"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="property-detail-info">
+                            <div class="property-detail-price">${priceText}</div>
+                            <div class="property-detail-address">
+                                <i class="fas fa-map-marker-alt"></i>
+                                ${property.address}
+                            </div>
+                            <div class="property-detail-features">
+                                <div class="property-detail-feature">
+                                    <i class="fas fa-bed"></i>
+                                    ${property.bedrooms} Bedrooms
+                                </div>
+                                <div class="property-detail-feature">
+                                    <i class="fas fa-bath"></i>
+                                    ${property.bathrooms} Bathrooms
+                                </div>
+                                <div class="property-detail-feature">
+                                    <i class="fas fa-ruler-combined"></i>
+                                    ${property.sqft} sqft
+                                </div>
+                                <div class="property-detail-feature">
+                                    <i class="fas fa-home"></i>
+                                    ${property.propertyType}
+                                </div>
+                            </div>
+                            <div class="property-detail-description">
+                                <h4>Description</h4>
+                                <p>${property.description}</p>
+                            </div>
+                            <div class="property-detail-amenities">
+                                <h4 class="amenities-title">Amenities</h4>
+                                <div class="amenities-list">
+                                    ${amenitiesList}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="property-detail-agent">
+                            <img src="${property.agent.avatar}" alt="${property.agent.name}" class="property-detail-agent-avatar">
+                            <div class="property-detail-agent-info">
+                                <div class="property-detail-agent-name">${property.agent.name}</div>
+                                <div class="property-detail-agent-title">${property.agent.title}</div>
+                            </div>
+                        </div>
+                        <div class="property-detail-agent-contact">
+                            <button class="property-detail-agent-contact-btn primary" onclick="openScheduleModal(event, ${property.id})">
+                                <i class="fas fa-calendar"></i> Schedule Viewing
+                            </button>
+                            <button class="property-detail-agent-contact-btn secondary" onclick="callAgent('${property.agent.phone}')">
+                                <i class="fas fa-phone"></i> Call
+                            </button>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h4>Neighborhood: ${property.neighborhood}</h4>
+                            <p>Learn more about this vibrant San Francisco neighborhood, including local attractions, schools, and transportation options.</p>
+                            <button class="btn btn-outline-primary w-100" onclick="showNeighborhoodInfo('${property.neighborhood}')">Explore Neighborhood</button>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h4>Mortgage Calculator</h4>
+                            <div class="form-group mb-2">
+                                <label class="form-label">Down Payment (%)</label>
+                                <input type="number" class="form-control-custom" id="downPayment" value="20" min="0" max="100">
+                            </div>
+                            <div class="form-group mb-2">
+                                <label class="form-label">Interest Rate (%)</label>
+                                <input type="number" class="form-control-custom" id="interestRate" value="6.5" min="0" max="20" step="0.1">
+                            </div>
+                            <div class="form-group mb-2">
+                                <label class="form-label">Loan Term (years)</label>
+                                <select class="form-control-custom" id="loanTerm">
+                                    <option value="15">15 years</option>
+                                    <option value="30" selected>30 years</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary-custom w-100" onclick="calculateMortgage()">Calculate Payment</button>
+                            <div class="mortgage-result" id="mortgageResult">
+                                <div class="mortgage-result-title">Estimated Monthly Payment</div>
+                                <div class="mortgage-result-value" id="monthlyPayment">$0</div>
+                                <div class="mortgage-result-details" id="mortgageDetails"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Show the modal
+            const propertyModal = new bootstrap.Modal(document.getElementById('propertyModal'));
+            propertyModal.show();
+        }
+
+        // Toggle favorite
+        function toggleFavorite(event, propertyId) {
+            event.stopPropagation();
+            
+            const index = favorites.indexOf(propertyId);
+            if (index > -1) {
+                favorites.splice(index, 1);
+                showNotification('Property removed from favorites', 'info');
+            } else {
+                favorites.push(propertyId);
+                showNotification('Property added to favorites', 'success');
+            }
+            
+            // Update UI
+            const favoriteBtn = event.currentTarget;
+            const icon = favoriteBtn.querySelector('i');
+            
+            if (favorites.includes(propertyId)) {
+                favoriteBtn.classList.add('active');
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+            } else {
+                favoriteBtn.classList.remove('active');
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+            }
+        }
+
+        // Open schedule modal
+        function openScheduleModal(event, propertyId) {
+            event.stopPropagation();
+            currentProperty = properties.find(p => p.id === propertyId);
+            const scheduleModal = new bootstrap.Modal(document.getElementById('scheduleModal'));
+            scheduleModal.show();
+        }
+
+        // Play virtual tour
+        function playVirtualTour(event, propertyId) {
+            event.stopPropagation();
+            const property = properties.find(p => p.id === propertyId);
+            showNotification(`Starting virtual tour for ${property.title}`, 'info');
+            
+            // In a real application, this would open a video player or VR tour
+            setTimeout(() => {
+                showNotification('Virtual tour loaded successfully', 'success');
+            }, 1000);
+        }
+
+        // Call agent
+        function callAgent(phone) {
+            window.location.href = `tel:${phone}`;
+            showNotification('Calling agent...', 'info');
+        }
+
+        // Show neighborhood info
+        function showNeighborhoodInfo(neighborhood) {
+            document.getElementById('neighborhoodModalLabel').textContent = neighborhood;
+            const neighborhoodModal = new bootstrap.Modal(document.getElementById('neighborhoodModal'));
+            neighborhoodModal.show();
+        }
+
+        // Calculate mortgage
+        function calculateMortgage() {
+            if (!currentProperty || currentProperty.type !== 'sale') return;
+            
+            const price = currentProperty.price;
+            const downPaymentPercent = parseFloat(document.getElementById('downPayment').value) / 100;
+            const interestRate = parseFloat(document.getElementById('interestRate').value) / 100 / 12;
+            const loanTerm = parseFloat(document.getElementById('loanTerm').value) * 12;
+            
+            const loanAmount = price * (1 - downPaymentPercent);
+            const monthlyPayment = (loanAmount * interestRate * Math.pow(1 + interestRate, loanTerm)) / (Math.pow(1 + interestRate, loanTerm) - 1);
+            
+            const resultDiv = document.getElementById('mortgageResult');
+            const paymentDiv = document.getElementById('monthlyPayment');
+            const detailsDiv = document.getElementById('mortgageDetails');
+            
+            paymentDiv.textContent = `$${monthlyPayment.toFixed(2).toLocaleString()}`;
+            detailsDiv.innerHTML = `
+                Principal & Interest: $${monthlyPayment.toFixed(2).toLocaleString()}<br>
+                Property Tax: ${(price * 0.00125).toFixed(2).toLocaleString()}/month<br>
+                Home Insurance: ${(price * 0.0003).toFixed(2).toLocaleString()}/month<br>
+                HOA Fees: $${(Math.random() * 500 + 100).toFixed(2).toLocaleString()}/month
+            `;
+            
+            resultDiv.classList.add('show');
+        }
+
+        // Submit schedule form
+        function submitScheduleForm(event) {
+            event.preventDefault();
+            
+            const modal = bootstrap.Modal.getInstance(document.getElementById('scheduleModal'));
+            modal.hide();
+            
+            showNotification('Viewing scheduled successfully! You will receive a confirmation email shortly.', 'success');
+        }
+
+        // Select time slot
+        function selectTimeSlot(element) {
+            document.querySelectorAll('.time-slot').forEach(slot => slot.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        // Switch search tab
+        function switchSearchTab(tab) {
+            document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update search form based on tab
+            const maxPriceSelect = document.getElementById('maxPriceSelect');
+            
+            if (tab === 'rent') {
+                maxPriceSelect.innerHTML = `
+                    <option>$5,000</option>
+                    <option>$7,500</option>
+                    <option>$10,000</option>
+                    <option>$15,000</option>
+                    <option>$20,000</option>
+                `;
+            } else {
+                maxPriceSelect.innerHTML = `
+                    <option>$1,000,000</option>
+                    <option>$1,500,000</option>
+                    <option>$2,000,000</option>
+                    <option>$3,000,000</option>
+                    <option>$5,000,000</option>
+                `;
+            }
+            
+            // Load properties based on tab
+            loadProperties(tab);
+        }
+
+        // Perform search
+        function performSearch(event) {
+            event.preventDefault();
+            
+            const location = document.getElementById('locationInput').value;
+            const propertyType = document.getElementById('propertyTypeSelect').value;
+            const minPrice = document.getElementById('minPriceSelect').value;
+            const maxPrice = document.getElementById('maxPriceSelect').value;
+            const bedrooms = document.getElementById('bedroomsSelect').value;
+            const bathrooms = document.getElementById('bathroomsSelect').value;
+            
+            showNotification('Searching for properties...', 'info');
+            
+            // Simulate search
+            setTimeout(() => {
+                loadProperties('sale');
+                showNotification(`Found 24 properties matching your criteria`, 'success');
+            }, 1000);
+        }
+
+        // Select filter option
+        function selectFilterOption(element, filterType, value) {
+            // For single-select filters
+            if (filterType !== 'amenities') {
+                const parent = element.parentElement;
+                parent.querySelectorAll('.filter-option').forEach(opt => opt.classList.remove('active'));
+                element.classList.add('active');
+                selectedFilters[filterType] = value;
+            }
+        }
+
+        // Toggle amenity
+        function toggleAmenity(element) {
+            element.classList.toggle('active');
+            const amenity = element.textContent;
+            
+            if (selectedFilters.amenities.includes(amenity)) {
+                selectedFilters.amenities = selectedFilters.amenities.filter(a => a !== amenity);
+            } else {
+                selectedFilters.amenities.push(amenity);
+            }
+        }
+
+        // Apply filters
+        function applyFilters() {
+            showNotification('Applying filters...', 'info');
+            
+            // Simulate filtering
+            setTimeout(() => {
+                loadProperties('sale');
+                showNotification('Filters applied successfully', 'success');
+            }, 1000);
+        }
+
+        // Sort properties
+        function sortProperties(sortBy) {
+            showNotification(`Sorting by ${sortBy}`, 'info');
+            
+            // Simulate sorting
+            setTimeout(() => {
+                loadProperties('sale');
+            }, 500);
+        }
+
+        // Load more properties
+        function loadMoreProperties() {
+            const button = document.getElementById('loadMoreBtn');
+            const container = document.getElementById('propertiesList');
+            const currentHTML = container.innerHTML;
+            
+            button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+            button.disabled = true;
+            
+            // Simulate loading
+            setTimeout(() => {
+                // Add more properties
+                container.innerHTML = currentHTML + properties.slice(0, 3).map(property => createPropertyCard(property)).join('');
+                
+                // Re-add click event listeners
+                addPropertyCardListeners();
+                
+                // Update property count
+                const currentCount = parseInt(document.getElementById('propertyCount').textContent);
+                document.getElementById('propertyCount').textContent = currentCount + 3;
+                
+                button.innerHTML = 'Load More';
+                button.disabled = false;
+                
+                showNotification('More properties loaded', 'success');
+            }, 1000);
+        }
+
+        // Load testimonials
+        function loadTestimonials() {
+            const container = document.getElementById('testimonialsList');
+            
+            container.innerHTML = testimonials.map(testimonial => `
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-rating">
+                            ${Array(testimonial.rating).fill().map(() => '<i class="fas fa-star"></i>').join('')}
+                        </div>
+                        <div class="testimonial-content">
+                            "${testimonial.content}"
+                        </div>
+                        <div class="testimonial-author">
+                            <img src="${testimonial.avatar}" alt="${testimonial.author}" class="author-avatar">
+                            <div class="author-info">
+                                <div class="author-name">${testimonial.author}</div>
+                                <div class="author-property">${testimonial.property}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load agents
+        function loadAgents() {
+            const container = document.getElementById('agentsList');
+            
+            container.innerHTML = agents.map(agent => `
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="agent-card" onclick="showAgentProfile(${agent.id})">
+                        <img src="${agent.image}" alt="${agent.name}" class="agent-image">
+                        <div class="agent-body">
+                            <h3 class="agent-name">${agent.name}</h3>
+                            <div class="agent-title">${agent.title}</div>
+                            <div class="agent-stats">
+                                <div class="agent-stat">
+                                    <div class="agent-stat-value">${agent.sales}</div>
+                                    <div class="agent-stat-label">Sales</div>
+                                </div>
+                                <div class="agent-stat">
+                                    <div class="agent-stat-value">${agent.years}</div>
+                                    <div class="agent-stat-label">Years</div>
+                                </div>
+                                <div class="agent-stat">
+                                    <div class="agent-stat-value">5.0</div>
+                                    <div class="agent-stat-label">Rating</div>
+                                </div>
+                            </div>
+                            <div class="agent-bio">${agent.bio}</div>
+                            <div class="agent-contact">
+                                <button class="agent-contact-btn primary" onclick="contactAgent(event, ${agent.id})">Contact</button>
+                                <button class="agent-contact-btn secondary" onclick="viewAgentProfile(event, ${agent.id})">View Profile</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Show agent profile
+        function showAgentProfile(agentId) {
+            const agent = agents.find(a => a.id === agentId);
+            showNotification(`Viewing ${agent.name}'s profile`, 'info');
+        }
+
+        // Contact agent
+        function contactAgent(event, agentId) {
+            event.stopPropagation();
+            const agent = agents.find(a => a.id === agentId);
+            showNotification(`Contact form opened for ${agent.name}`, 'info');
+        }
+
+        // View agent profile
+        function viewAgentProfile(event, agentId) {
+            event.stopPropagation();
+            const agent = agents.find(a => a.id === agentId);
+            showNotification(`Opening detailed profile for ${agent.name}`, 'info');
+        }
+
+        // Initialize map
+        function initializeMap() {
+            // Create map centered on San Francisco
+            const map = L.map('map').setView([37.7749, -122.4194], 12);
+            
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // Add markers for properties
+            properties.forEach(property => {
+                const marker = L.marker([property.lat, property.lng]).addTo(map);
+                
+                // Create popup content
+                const popupContent = `
+                    <div style="width: 200px;">
+                        <img src="${property.image}" alt="${property.title}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;">
+                        <h5 style="margin: 0 0 5px 0;">${property.title}</h5>
+                        <p style="margin: 0 0 5px 0; font-size: 14px;">${property.address}</p>
+                        <p style="margin: 0 0 5px 0; font-weight: bold; color: #1a73e8;">
+                            ${property.type === 'sale' ? `$${property.price.toLocaleString()}` : `$${property.price.toLocaleString()}/mo`}
+                        </p>
+                        <button class="btn btn-primary btn-sm" onclick="showPropertyDetails(${property.id})">View Details</button>
+                    </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+            });
+            
+            // Add neighborhood boundaries (simplified)
+            const neighborhoods = [
+                { name: "Pacific Heights", coords: [[37.7929, -122.4327], [37.7929, -122.4370], [37.7870, -122.4370], [37.7870, -122.4327]] },
+                { name: "Noe Valley", coords: [[37.7513, -122.4268], [37.7513, -122.4350], [37.7430, -122.4350], [37.7430, -122.4268]] },
+                { name: "SOMA", coords: [[37.7880, -122.3976], [37.7880, -122.4050], [37.7780, -122.4050], [37.7780, -122.3976]] },
+                { name: "Marina", coords: [[37.8020, -122.4350], [37.8020, -122.4450], [37.7950, -122.4450], [37.7950, -122.4350]] },
+                { name: "Castro", coords: [[37.7614, -122.4349], [37.7614, -122.4400], [37.7550, -122.4400], [37.7550, -122.4349]] }
+            ];
+            
+            neighborhoods.forEach(neighborhood => {
+                const polygon = L.polygon(neighborhood.coords, {
+                    color: '#1a73e8',
+                    fillColor: '#1a73e8',
+                    fillOpacity: 0.1
+                }).addTo(map);
+                
+                polygon.bindPopup(`<strong>${neighborhood.name}</strong>`);
+            });
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = 'notification-toast';
+            
+            const iconClass = type === 'success' ? 'fa-check' : 'fa-info';
+            const iconBg = type === 'success' ? 'success' : 'info';
+            
+            notification.innerHTML = `
+                <div class="notification-icon ${iconBg}">
+                    <i class="fas ${iconClass}"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">${type === 'success' ? 'Success' : 'Information'}</div>
+                    <div class="notification-message">${message}</div>
+                </div>
+                <button class="notification-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // Show sign in modal
+        function showSignInModal() {
+            showNotification('Sign in feature coming soon!', 'info');
+        }
+
+        // Open social link
+        function openSocialLink(platform) {
+            showNotification(`Opening ${platform} page...`, 'info');
+        }
+
+        // Scroll to section
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Show resource
+        function showResource(resource) {
+            showNotification(`Loading ${resource.replace('-', ' ')}...`, 'info');
+        }
+
+        // Make phone call
+        function makePhoneCall() {
+            window.location.href = 'tel:4155551234';
+            showNotification('Dialing...', 'info');
+        }
+
+        // Send email
+        function sendEmail() {
+            window.location.href = 'mailto:info@bayareahomes.com';
+            showNotification('Opening email client...', 'info');
+        }
+
+        // Show map
+        function showMap() {
+            scrollToSection('neighborhoods');
+        }
+    </script>
+</body>
+</html>
